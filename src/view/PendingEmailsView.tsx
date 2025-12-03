@@ -1,13 +1,15 @@
+// View Layer - Pending Emails View
+
 import { useState, useEffect } from 'react';
 import { Save, Download, Search, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { LocationSelect } from '@/components/emails/LocationSelect';
-import { EmailDetailModal } from '@/components/emails/EmailDetailModal';
+import { LocationSelect } from './components/emails/LocationSelect';
+import { EmailDetailModal } from './components/emails/EmailDetailModal';
 import { useEmails } from '@/contexts/EmailContext';
-import { Email } from '@/types/email';
+import { Email } from '@/model/entities';
 
 interface PendingUpdate {
   id: string;
@@ -15,18 +17,18 @@ interface PendingUpdate {
   city: string;
 }
 
-export default function PendingEmails() {
-  const { pendingEmails, savePendingEmails, exportEmails, setFilter } = useEmails();
+export default function PendingEmailsView() {
+  const { state, actions } = useEmails();
   const [updates, setUpdates] = useState<Record<string, PendingUpdate>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
 
   useEffect(() => {
-    setFilter({ status: 'pending' });
-    return () => setFilter({ status: 'all' });
-  }, [setFilter]);
+    actions.setFilter({ status: 'pending' });
+    return () => actions.setFilter({ status: 'all' });
+  }, [actions]);
 
-  const filteredEmails = pendingEmails.filter(email => {
+  const filteredEmails = state.pendingEmails.filter(email => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     return (
@@ -36,10 +38,10 @@ export default function PendingEmails() {
     );
   });
 
-  const handleStateChange = (emailId: string, state: string) => {
+  const handleStateChange = (emailId: string, emailState: string) => {
     setUpdates(prev => ({
       ...prev,
-      [emailId]: { id: emailId, state, city: '' },
+      [emailId]: { id: emailId, state: emailState, city: '' },
     }));
   };
 
@@ -50,9 +52,9 @@ export default function PendingEmails() {
     }));
   };
 
-  const handleSaveAll = () => {
+  const handleSaveAll = async () => {
     const validUpdates = Object.values(updates).filter(u => u.state && u.city);
-    savePendingEmails(validUpdates);
+    await actions.savePendingEmails(validUpdates);
     setUpdates({});
   };
 
@@ -65,13 +67,13 @@ export default function PendingEmails() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">E-mails Pendentes</h1>
           <p className="text-muted-foreground mt-1">
-            {pendingEmails.length} e-mail(s) aguardando classificação
+            {state.pendingEmails.length} e-mail(s) aguardando classificação
           </p>
         </div>
         <div className="flex gap-2">
           <Button 
             variant="outline" 
-            onClick={exportEmails}
+            onClick={actions.exportEmails}
           >
             <Download className="mr-2 h-4 w-4" />
             Exportar
@@ -144,7 +146,7 @@ export default function PendingEmails() {
                       <LocationSelect
                         selectedState={update.state}
                         selectedCity={update.city}
-                        onStateChange={(state) => handleStateChange(email.id, state)}
+                        onStateChange={(emailState) => handleStateChange(email.id, emailState)}
                         onCityChange={(city) => handleCityChange(email.id, city)}
                         compact
                       />

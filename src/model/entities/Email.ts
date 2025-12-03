@@ -1,4 +1,4 @@
-// Model Layer - Email Types
+// Model Layer - Email Entity
 
 export interface Email {
   id: string;
@@ -41,16 +41,6 @@ export interface DashboardData {
   emailsByState: EmailsByState[];
   emailsByDay: EmailsByDay[];
   topRecipients: TopRecipient[];
-}
-
-export interface BrazilianState {
-  code: string;
-  name: string;
-}
-
-export interface BrazilianCity {
-  name: string;
-  stateCode: string;
 }
 
 export type EmailFormData = Omit<Email, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'isManual'>;

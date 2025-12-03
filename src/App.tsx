@@ -5,10 +5,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { EmailProvider } from "@/contexts/EmailContext";
 import { AppLayout } from "@/components/layout/AppLayout";
-import Index from "./pages/Index";
-import PendingEmails from "./pages/PendingEmails";
-import NewEmail from "./pages/NewEmail";
-import EmailHistory from "./pages/EmailHistory";
+import DashboardView from "./view/DashboardView";
+import PendingEmailsView from "./view/PendingEmailsView";
+import NewEmailView from "./view/NewEmailView";
+import EmailHistoryView from "./view/EmailHistoryView";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,10 +22,10 @@ const App = () => (
         <BrowserRouter>
           <AppLayout>
             <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/pending" element={<PendingEmails />} />
-              <Route path="/new" element={<NewEmail />} />
-              <Route path="/history" element={<EmailHistory />} />
+              <Route path="/" element={<DashboardView />} />
+              <Route path="/pending" element={<PendingEmailsView />} />
+              <Route path="/new" element={<NewEmailView />} />
+              <Route path="/history" element={<EmailHistoryView />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AppLayout>

@@ -1,3 +1,5 @@
+// View Layer - New Email View
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Save, X } from 'lucide-react';
@@ -5,13 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { LocationSelect } from '@/components/emails/LocationSelect';
+import { LocationSelect } from './components/emails/LocationSelect';
 import { useEmails } from '@/contexts/EmailContext';
 import { toast } from '@/hooks/use-toast';
 
-export default function NewEmail() {
+export default function NewEmailView() {
   const navigate = useNavigate();
-  const { createEmail } = useEmails();
+  const { actions } = useEmails();
 
   const [formData, setFormData] = useState({
     sender: '',
@@ -52,7 +54,7 @@ export default function NewEmail() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validate()) {
@@ -64,7 +66,7 @@ export default function NewEmail() {
       return;
     }
 
-    createEmail({
+    await actions.createEmail({
       sender: formData.sender.trim(),
       recipient: formData.recipient.trim(),
       subject: formData.subject.trim(),

@@ -1,3 +1,5 @@
+// View Layer - Location Select Component
+
 import { useState, useEffect } from 'react';
 import {
   Select,
@@ -6,8 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { brazilianStates } from '@/data/mockData';
-import { useEmails } from '@/contexts/EmailContext';
+import { locationRepository } from '@/contexts/EmailContext';
+import { BrazilianState, BrazilianCity } from '@/model/entities';
 
 interface LocationSelectProps {
   selectedState?: string;
@@ -24,16 +26,30 @@ export function LocationSelect({
   onCityChange,
   compact = false,
 }: LocationSelectProps) {
-  const { getCitiesByState } = useEmails();
-  const [cities, setCities] = useState<Array<{ name: string; stateCode: string }>>([]);
+  const [states, setStates] = useState<BrazilianState[]>([]);
+  const [cities, setCities] = useState<BrazilianCity[]>([]);
 
+  // Load states on mount
   useEffect(() => {
-    if (selectedState) {
-      setCities(getCitiesByState(selectedState));
-    } else {
-      setCities([]);
-    }
-  }, [selectedState, getCitiesByState]);
+    const loadStates = async () => {
+      const data = await locationRepository.getStates();
+      setStates(data);
+    };
+    loadStates();
+  }, []);
+
+  // Load cities when state changes
+  useEffect(() => {
+    const loadCities = async () => {
+      if (selectedState) {
+        const data = await locationRepository.getCitiesByState(selectedState);
+        setCities(data);
+      } else {
+        setCities([]);
+      }
+    };
+    loadCities();
+  }, [selectedState]);
 
   const handleStateChange = (value: string) => {
     onStateChange(value);
@@ -47,7 +63,7 @@ export function LocationSelect({
           <SelectValue placeholder="Estado (UF)" />
         </SelectTrigger>
         <SelectContent>
-          {brazilianStates.map((state) => (
+          {states.map((state) => (
             <SelectItem key={state.code} value={state.code}>
               {state.code} - {state.name}
             </SelectItem>

@@ -1,5 +1,7 @@
+// View Layer - Email Detail Modal Component
+
 import { useState } from 'react';
-import { Email } from '@/types/email';
+import { Email } from '@/model/entities';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { X, MapPin, Calendar, User, Mail, FileText } from 'lucide-react';
@@ -13,14 +15,14 @@ interface EmailDetailModalProps {
 }
 
 export function EmailDetailModal({ email, onClose }: EmailDetailModalProps) {
-  const { updateEmailLocation } = useEmails();
+  const { actions } = useEmails();
   const [isEditing, setIsEditing] = useState(false);
-  const [state, setState] = useState(email.state || '');
-  const [city, setCity] = useState(email.city || '');
+  const [selectedState, setSelectedState] = useState(email.state || '');
+  const [selectedCity, setSelectedCity] = useState(email.city || '');
 
-  const handleSaveLocation = () => {
-    if (state && city) {
-      updateEmailLocation(email.id, state, city);
+  const handleSaveLocation = async () => {
+    if (selectedState && selectedCity) {
+      await actions.updateEmailLocation(email.id, selectedState, selectedCity);
       setIsEditing(false);
     }
   };
@@ -102,16 +104,16 @@ export function EmailDetailModal({ email, onClose }: EmailDetailModalProps) {
             <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border">
               <p className="text-sm font-medium text-foreground">Editar Localização</p>
               <LocationSelect
-                selectedState={state}
-                selectedCity={city}
-                onStateChange={setState}
-                onCityChange={setCity}
+                selectedState={selectedState}
+                selectedCity={selectedCity}
+                onStateChange={setSelectedState}
+                onCityChange={setSelectedCity}
               />
               <div className="flex gap-2 justify-end">
                 <Button variant="outline" onClick={() => setIsEditing(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={handleSaveLocation} disabled={!state || !city}>
+                <Button onClick={handleSaveLocation} disabled={!selectedState || !selectedCity}>
                   Salvar
                 </Button>
               </div>

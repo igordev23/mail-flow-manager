@@ -1,16 +1,18 @@
+// View Layer - Dashboard View
+
 import { Mail, CheckCircle, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useEmails } from '@/contexts/EmailContext';
-import { StatCard } from '@/components/dashboard/StatCard';
-import { EmailsByStateChart } from '@/components/dashboard/EmailsByStateChart';
-import { EmailsTrendChart } from '@/components/dashboard/EmailsTrendChart';
-import { TopRecipients } from '@/components/dashboard/TopRecipients';
-import { QuickActions } from '@/components/dashboard/QuickActions';
+import { StatCard } from './components/dashboard/StatCard';
+import { EmailsByStateChart } from './components/dashboard/EmailsByStateChart';
+import { EmailsTrendChart } from './components/dashboard/EmailsTrendChart';
+import { TopRecipients } from './components/dashboard/TopRecipients';
+import { QuickActions } from './components/dashboard/QuickActions';
 
-export default function Dashboard() {
-  const { dashboardData } = useEmails();
-  const { stats, emailsByState, emailsByDay, topRecipients } = dashboardData;
+export default function DashboardView() {
+  const { state } = useEmails();
+  const { stats, emailsByState, emailsByDay, topRecipients } = state.dashboardData;
 
   const today = format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
 

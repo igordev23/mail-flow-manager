@@ -1,57 +1,7 @@
-import { Email, BrazilianState, BrazilianCity, DashboardData, EmailStats } from '@/types/email';
+// Model Layer - In-Memory Email Repository Implementation
 
-export const brazilianStates: BrazilianState[] = [
-  { code: 'PI', name: 'Piauí' },
-  { code: 'CE', name: 'Ceará' },
-  { code: 'MA', name: 'Maranhão' },
-  { code: 'SP', name: 'São Paulo' },
-  { code: 'RJ', name: 'Rio de Janeiro' },
-  { code: 'BA', name: 'Bahia' },
-  { code: 'PE', name: 'Pernambuco' },
-  { code: 'MG', name: 'Minas Gerais' },
-  { code: 'RS', name: 'Rio Grande do Sul' },
-  { code: 'PR', name: 'Paraná' },
-];
-
-export const brazilianCities: BrazilianCity[] = [
-  // Piauí
-  { name: 'Teresina', stateCode: 'PI' },
-  { name: 'Piripiri', stateCode: 'PI' },
-  { name: 'Parnaíba', stateCode: 'PI' },
-  { name: 'Picos', stateCode: 'PI' },
-  // Ceará
-  { name: 'Fortaleza', stateCode: 'CE' },
-  { name: 'Sobral', stateCode: 'CE' },
-  { name: 'Juazeiro do Norte', stateCode: 'CE' },
-  { name: 'Crato', stateCode: 'CE' },
-  // Maranhão
-  { name: 'São Luís', stateCode: 'MA' },
-  { name: 'Imperatriz', stateCode: 'MA' },
-  { name: 'Caxias', stateCode: 'MA' },
-  // São Paulo
-  { name: 'São Paulo', stateCode: 'SP' },
-  { name: 'Campinas', stateCode: 'SP' },
-  { name: 'Santos', stateCode: 'SP' },
-  // Rio de Janeiro
-  { name: 'Rio de Janeiro', stateCode: 'RJ' },
-  { name: 'Niterói', stateCode: 'RJ' },
-  { name: 'Petrópolis', stateCode: 'RJ' },
-  // Bahia
-  { name: 'Salvador', stateCode: 'BA' },
-  { name: 'Feira de Santana', stateCode: 'BA' },
-  // Pernambuco
-  { name: 'Recife', stateCode: 'PE' },
-  { name: 'Olinda', stateCode: 'PE' },
-  // Minas Gerais
-  { name: 'Belo Horizonte', stateCode: 'MG' },
-  { name: 'Uberlândia', stateCode: 'MG' },
-  // Rio Grande do Sul
-  { name: 'Porto Alegre', stateCode: 'RS' },
-  { name: 'Caxias do Sul', stateCode: 'RS' },
-  // Paraná
-  { name: 'Curitiba', stateCode: 'PR' },
-  { name: 'Londrina', stateCode: 'PR' },
-];
+import { Email, EmailFormData } from '../../entities/Email';
+import { IEmailRepository } from '../IEmailRepository';
 
 const generateDate = (daysAgo: number): Date => {
   const date = new Date();
@@ -61,7 +11,7 @@ const generateDate = (daysAgo: number): Date => {
   return date;
 };
 
-export const mockEmails: Email[] = [
+const initialEmails: Email[] = [
   {
     id: '1',
     sender: 'joao@empresa.com',
@@ -196,47 +146,62 @@ export const mockEmails: Email[] = [
   },
 ];
 
-export const getDashboardData = (emails: Email[]): DashboardData => {
-  const stats: EmailStats = {
-    total: emails.length,
-    classified: emails.filter(e => e.status === 'classified').length,
-    pending: emails.filter(e => e.status === 'pending').length,
-  };
+export class EmailRepositoryMemory implements IEmailRepository {
+  private emails: Email[];
 
-  const stateCount: Record<string, number> = {};
-  emails.forEach(email => {
-    if (email.state) {
-      stateCount[email.state] = (stateCount[email.state] || 0) + 1;
+  constructor(emails: Email[] = initialEmails) {
+    this.emails = [...emails];
+  }
+
+  async list(): Promise<Email[]> {
+    return [...this.emails];
+  }
+
+  async getById(id: string): Promise<Email | null> {
+    return this.emails.find(e => e.id === id) || null;
+  }
+
+  async create(data: EmailFormData): Promise<Email> {
+    const newEmail: Email = {
+      id: Date.now().toString(),
+      ...data,
+      status: data.state && data.city ? 'classified' : 'pending',
+      isManual: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.emails = [newEmail, ...this.emails];
+    return newEmail;
+  }
+
+  async update(id: string, data: Partial<Email>): Promise<Email> {
+    const index = this.emails.findIndex(e => e.id === id);
+    if (index === -1) throw new Error('Email not found');
+    
+    this.emails[index] = {
+      ...this.emails[index],
+      ...data,
+      updatedAt: new Date(),
+    };
+    return this.emails[index];
+  }
+
+  async delete(id: string): Promise<void> {
+    this.emails = this.emails.filter(e => e.id !== id);
+  }
+
+  async updateLocation(id: string, state: string, city: string): Promise<Email> {
+    return this.update(id, { state, city, status: 'classified' });
+  }
+
+  async bulkUpdateLocation(updates: Array<{ id: string; state: string; city: string }>): Promise<Email[]> {
+    const results: Email[] = [];
+    for (const update of updates) {
+      if (update.state && update.city) {
+        const email = await this.updateLocation(update.id, update.state, update.city);
+        results.push(email);
+      }
     }
-  });
-  const emailsByState = Object.entries(stateCount)
-    .map(([state, count]) => ({ state, count }))
-    .sort((a, b) => b.count - a.count);
-
-  const dayCount: Record<string, number> = {};
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
-    return d.toISOString().split('T')[0];
-  });
-  last7Days.forEach(day => { dayCount[day] = 0; });
-  emails.forEach(email => {
-    const day = email.date.toISOString().split('T')[0];
-    if (dayCount[day] !== undefined) {
-      dayCount[day]++;
-    }
-  });
-  const emailsByDay = Object.entries(dayCount)
-    .map(([date, count]) => ({ date, count }));
-
-  const recipientCount: Record<string, number> = {};
-  emails.forEach(email => {
-    recipientCount[email.recipient] = (recipientCount[email.recipient] || 0) + 1;
-  });
-  const topRecipients = Object.entries(recipientCount)
-    .map(([email, count]) => ({ email, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 3);
-
-  return { stats, emailsByState, emailsByDay, topRecipients };
-};
+    return results;
+  }
+}

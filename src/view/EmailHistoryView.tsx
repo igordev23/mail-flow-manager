@@ -1,4 +1,6 @@
-import { useState } from 'react';
+// View Layer - Email History View
+
+import { useState, useEffect } from 'react';
 import { Search, Download, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,38 +11,48 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { EmailTable } from '@/components/emails/EmailTable';
-import { EmailDetailModal } from '@/components/emails/EmailDetailModal';
+import { EmailTable } from './components/emails/EmailTable';
+import { EmailDetailModal } from './components/emails/EmailDetailModal';
 import { useEmails } from '@/contexts/EmailContext';
-import { Email } from '@/types/email';
-import { brazilianStates } from '@/data/mockData';
+import { Email, BrazilianState } from '@/model/entities';
+import { locationRepository } from '@/contexts/EmailContext';
 
-export default function EmailHistory() {
-  const { filteredEmails, filter, setFilter, exportEmails } = useEmails();
+export default function EmailHistoryView() {
+  const { state, actions } = useEmails();
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [states, setStates] = useState<BrazilianState[]>([]);
+
+  // Load states for filter
+  useEffect(() => {
+    const loadStates = async () => {
+      const data = await locationRepository.getStates();
+      setStates(data);
+    };
+    loadStates();
+  }, []);
 
   const handleSearchChange = (search: string) => {
-    setFilter({ ...filter, search });
+    actions.setFilter({ ...state.filter, search });
   };
 
   const handleStatusChange = (status: string) => {
-    setFilter({ 
-      ...filter, 
+    actions.setFilter({ 
+      ...state.filter, 
       status: status === 'all' ? 'all' : status as 'pending' | 'classified' 
     });
   };
 
-  const handleStateChange = (state: string) => {
-    setFilter({ 
-      ...filter, 
-      state: state === 'all' ? undefined : state,
+  const handleStateChange = (stateCode: string) => {
+    actions.setFilter({ 
+      ...state.filter, 
+      state: stateCode === 'all' ? undefined : stateCode,
       city: undefined 
     });
   };
 
   const clearFilters = () => {
-    setFilter({ status: 'all' });
+    actions.setFilter({ status: 'all' });
   };
 
   return (
@@ -50,7 +62,7 @@ export default function EmailHistory() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Histórico de E-mails</h1>
           <p className="text-muted-foreground mt-1">
-            {filteredEmails.length} e-mail(s) encontrado(s)
+            {state.filteredEmails.length} e-mail(s) encontrado(s)
           </p>
         </div>
         <div className="flex gap-2">
@@ -61,7 +73,7 @@ export default function EmailHistory() {
             <Filter className="mr-2 h-4 w-4" />
             Filtros
           </Button>
-          <Button variant="outline" onClick={exportEmails}>
+          <Button variant="outline" onClick={actions.exportEmails}>
             <Download className="mr-2 h-4 w-4" />
             Exportar
           </Button>
@@ -73,7 +85,7 @@ export default function EmailHistory() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Digite para pesquisar..."
-          value={filter.search || ''}
+          value={state.filter.search || ''}
           onChange={(e) => handleSearchChange(e.target.value)}
           className="pl-10"
         />
@@ -87,7 +99,7 @@ export default function EmailHistory() {
               <label className="text-xs font-medium text-muted-foreground mb-1 block">
                 Status
               </label>
-              <Select value={filter.status || 'all'} onValueChange={handleStatusChange}>
+              <Select value={state.filter.status || 'all'} onValueChange={handleStatusChange}>
                 <SelectTrigger className="w-full sm:w-[150px]">
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
@@ -103,15 +115,15 @@ export default function EmailHistory() {
               <label className="text-xs font-medium text-muted-foreground mb-1 block">
                 Estado
               </label>
-              <Select value={filter.state || 'all'} onValueChange={handleStateChange}>
+              <Select value={state.filter.state || 'all'} onValueChange={handleStateChange}>
                 <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos os estados</SelectItem>
-                  {brazilianStates.map((state) => (
-                    <SelectItem key={state.code} value={state.code}>
-                      {state.code} - {state.name}
+                  {states.map((stateItem) => (
+                    <SelectItem key={stateItem.code} value={stateItem.code}>
+                      {stateItem.code} - {stateItem.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -130,7 +142,7 @@ export default function EmailHistory() {
       {/* Table */}
       <div className="stat-card overflow-hidden p-0">
         <EmailTable
-          emails={filteredEmails}
+          emails={state.filteredEmails}
           onViewEmail={setSelectedEmail}
           showStatus
         />

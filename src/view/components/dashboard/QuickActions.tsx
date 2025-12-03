@@ -1,3 +1,5 @@
+// View Layer - Quick Actions Component
+
 import { Clock, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -5,7 +7,7 @@ import { useEmails } from '@/contexts/EmailContext';
 
 export function QuickActions() {
   const navigate = useNavigate();
-  const { pendingEmails } = useEmails();
+  const { state } = useEmails();
 
   return (
     <div className="stat-card animate-fade-in stagger-4">
@@ -20,7 +22,7 @@ export function QuickActions() {
           <div className="flex-1">
             <span className="block text-sm font-medium">Ver Pendentes</span>
             <span className="block text-xs text-muted-foreground">
-              {pendingEmails.length} aguardando
+              {state.pendingEmails.length} aguardando
             </span>
           </div>
         </Button>

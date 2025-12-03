@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Save, Download, Search } from 'lucide-react';
+import { Save, Download, Search, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { LocationSelect } from '@/components/emails/LocationSelect';
+import { EmailDetailModal } from '@/components/emails/EmailDetailModal';
 import { useEmails } from '@/contexts/EmailContext';
+import { Email } from '@/types/email';
 
 interface PendingUpdate {
   id: string;
@@ -17,6 +19,7 @@ export default function PendingEmails() {
   const { pendingEmails, savePendingEmails, exportEmails, setFilter } = useEmails();
   const [updates, setUpdates] = useState<Record<string, PendingUpdate>>({});
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
 
   useEffect(() => {
     setFilter({ status: 'pending' });
@@ -112,6 +115,9 @@ export default function PendingEmails() {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Local
                 </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Ação
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -143,6 +149,16 @@ export default function PendingEmails() {
                         compact
                       />
                     </td>
+                    <td className="px-4 py-3 text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedEmail(email)}
+                        title="Ver detalhes"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </td>
                   </tr>
                 );
               })}
@@ -161,6 +177,14 @@ export default function PendingEmails() {
           </div>
         )}
       </div>
+
+      {/* Detail Modal */}
+      {selectedEmail && (
+        <EmailDetailModal
+          email={selectedEmail}
+          onClose={() => setSelectedEmail(null)}
+        />
+      )}
     </div>
   );
 }

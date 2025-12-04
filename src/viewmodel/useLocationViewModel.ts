@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { BrazilianState, BrazilianCity } from '@/model/entities';
 import { ILocationRepository } from '@/model/repositories';
+import { IBGELocationService } from '@/infrastructure';
 
 // State Type
 export interface UseLocationViewModelState {
@@ -41,7 +42,7 @@ export function useLocationViewModel(
   // Load states on mount
   useEffect(() => {
     const loadStates = async () => {
-      const data = await locationRepository.getStates();
+      const data = await locationRepository.getStates(); // <--- USANDO O REPOSITÓRIO INJETADO
       setStates(data);
     };
     loadStates();
@@ -57,20 +58,23 @@ export function useLocationViewModel(
   }, [selectedState]);
 
   // Load cities for a state
-  const loadCities = useCallback(async (stateCode: string) => {
-    setLoading(true);
-    try {
-      const data = await locationRepository.getCitiesByState(stateCode);
-      setCities(data);
-    } finally {
-      setLoading(false);
-    }
-  }, [locationRepository]);
+  const loadCities = useCallback(
+    async (stateCode: string) => {
+      setLoading(true);
+      try {
+        const data = await locationRepository.getCitiesByState(stateCode); // <--- AQUI TBM
+        setCities(data);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [locationRepository]
+  );
 
   // Handle state change
   const handleStateChange = useCallback((stateCode: string) => {
     setSelectedState(stateCode);
-    setSelectedCity(''); // Reset city when state changes
+    setSelectedCity('');
   }, []);
 
   // Reset selections
@@ -96,3 +100,4 @@ export function useLocationViewModel(
     },
   };
 }
+

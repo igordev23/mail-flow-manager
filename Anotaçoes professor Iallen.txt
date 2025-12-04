@@ -1,0 +1,8 @@
+Anotações Ajustadas (Arquitetura MVVM / Boas Práticas)
+
+Criar um UseCase sempre que houver uma lógica que será utilizada em mais de um lugar, evitando repetição de código e garantindo reutilização.
+
+Não usar handlers diretamente na View, exceto quando forem exclusivamente para ações de interface (ex.: animações, navegação, desenho, interação visual).
+Toda a lógica deve ficar na ViewModel.
+
+Criar um useNomeDaTelaViewModel para cada View, garantindo separação clara entre apresentação (View) e regras de negócio/estado (ViewModel).

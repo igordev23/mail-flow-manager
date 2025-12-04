@@ -4,10 +4,10 @@ import React, { createContext, useContext, useMemo, ReactNode } from 'react';
 import { IEmailRepository, ILocationRepository } from '@/model/repositories';
 import { EmailRepositoryMemory, LocationRepositoryMemory } from '@/infrastructure/repositories';
 import { useEmailsBaseViewModel, UseEmailsBaseViewModelReturn } from '@/viewmodel';
-
+import { IBGELocationService } from '@/infrastructure';
 // Create repository instances (can be swapped for different implementations)
 const emailRepository = new EmailRepositoryMemory();
-const locationRepository = new LocationRepositoryMemory();
+const locationRepository = new IBGELocationService();
 
 interface EmailContextType extends UseEmailsBaseViewModelReturn {
   emailRepository: IEmailRepository;

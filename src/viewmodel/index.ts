@@ -1,4 +1,8 @@
 // ViewModel Layer - Barrel Export
 
-export * from './useEmailsViewModel';
+export * from './useEmailsBaseViewModel';
+export * from './useDashboardViewModel';
+export * from './usePendingEmailsViewModel';
+export * from './useNewEmailViewModel';
+export * from './useEmailHistoryViewModel';
 export * from './useLocationViewModel';

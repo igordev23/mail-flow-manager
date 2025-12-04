@@ -1,13 +1,15 @@
 // View Layer - Email Detail Modal Component
 
-import { useState } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Email } from '@/model/entities';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { X, MapPin, Calendar, User, Mail, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LocationSelect } from './LocationSelect';
-import { useEmails } from '@/contexts/EmailContext';
+import { useEmailContext } from '@/contexts/EmailContext';
+import { UpdateEmailLocationUseCase } from '@/model/usecases';
+import { toast } from '@/hooks/use-toast';
 
 interface EmailDetailModalProps {
   email: Email;
@@ -15,17 +17,35 @@ interface EmailDetailModalProps {
 }
 
 export function EmailDetailModal({ email, onClose }: EmailDetailModalProps) {
-  const { actions } = useEmails();
+  const { emailRepository, actions } = useEmailContext();
   const [isEditing, setIsEditing] = useState(false);
   const [selectedState, setSelectedState] = useState(email.state || '');
   const [selectedCity, setSelectedCity] = useState(email.city || '');
 
-  const handleSaveLocation = async () => {
+  const updateLocationUseCase = useMemo(
+    () => new UpdateEmailLocationUseCase(emailRepository),
+    [emailRepository]
+  );
+
+  const handleSaveLocation = useCallback(async () => {
     if (selectedState && selectedCity) {
-      await actions.updateEmailLocation(email.id, selectedState, selectedCity);
-      setIsEditing(false);
+      try {
+        await updateLocationUseCase.execute(email.id, selectedState, selectedCity);
+        toast({
+          title: 'E-mail classificado',
+          description: 'Localização atualizada com sucesso.',
+        });
+        actions.refreshEmails();
+        setIsEditing(false);
+      } catch (err) {
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível atualizar a localização.',
+          variant: 'destructive',
+        });
+      }
     }
-  };
+  }, [email.id, selectedState, selectedCity, updateLocationUseCase, actions]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-foreground/20 backdrop-blur-sm animate-fade-in">

@@ -3,11 +3,17 @@
 import { Clock, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { useEmails } from '@/contexts/EmailContext';
+import { useEmailContext } from '@/contexts/EmailContext';
+import { useMemo } from 'react';
 
 export function QuickActions() {
   const navigate = useNavigate();
-  const { state } = useEmails();
+  const { state } = useEmailContext();
+
+  const pendingCount = useMemo(
+    () => state.emails.filter(e => e.status === 'pending').length,
+    [state.emails]
+  );
 
   return (
     <div className="stat-card animate-fade-in stagger-4">
@@ -22,7 +28,7 @@ export function QuickActions() {
           <div className="flex-1">
             <span className="block text-sm font-medium">Ver Pendentes</span>
             <span className="block text-xs text-muted-foreground">
-              {state.pendingEmails.length} aguardando
+              {pendingCount} aguardando
             </span>
           </div>
         </Button>

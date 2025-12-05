@@ -1,10 +1,11 @@
 // Model Layer - Bulk Update Location UseCase
 
 import { Email } from '../entities';
-import { IEmailRepository } from '../repositories';
+import { EmailRepositorySupabase } from '../repositories/EmailRepositorySupabase';
 
 export class BulkUpdateLocationUseCase {
-  constructor(private emailRepository: IEmailRepository) {}
+  // Agora sempre usa EmailRepositorySupabase
+  private emailRepository = new EmailRepositorySupabase();
 
   async findSimilarEmails(
     emails: Email[],

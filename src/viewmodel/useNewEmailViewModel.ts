@@ -4,6 +4,7 @@ import { useState, useCallback, useMemo } from 'react';
 import { IEmailRepository } from '@/model/repositories';
 import { CreateEmailUseCase } from '@/model/usecases';
 import { toast } from '@/hooks/use-toast';
+import { EmailRepositorySupabase } from '@/model/repositories/EmailRepositorySupabase';
 
 // State Type
 export interface NewEmailFormData {
@@ -54,8 +55,8 @@ export function useNewEmailViewModel(
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createEmailUseCase = useMemo(
-    () => new CreateEmailUseCase(emailRepository),
-    [emailRepository]
+    () => new CreateEmailUseCase(new EmailRepositorySupabase()),
+    []
   );
 
   const validate = useCallback((): boolean => {

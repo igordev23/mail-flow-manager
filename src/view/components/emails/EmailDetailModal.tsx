@@ -20,6 +20,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { EmailRepositorySupabase } from '@/model/repositories/EmailRepositorySupabase';
+import { useEffect } from 'react';
 
 interface EmailDetailModalProps {
   email: Email;
@@ -36,19 +38,31 @@ export function EmailDetailModal({ email, onClose }: EmailDetailModalProps) {
   const [similarEmails, setSimilarEmails] = useState<Email[]>([]);
 
   const updateLocationUseCase = useMemo(
-    () => new UpdateEmailLocationUseCase(emailRepository),
+    () => new UpdateEmailLocationUseCase(),
     [emailRepository]
   );
 
   const bulkUpdateUseCase = useMemo(
-    () => new BulkUpdateLocationUseCase(emailRepository),
+    () => new BulkUpdateLocationUseCase(),
     [emailRepository]
   );
 
   const deleteEmailUseCase = useMemo(
-    () => new DeleteEmailUseCase(emailRepository),
+    () => new DeleteEmailUseCase(new EmailRepositorySupabase()),
     [emailRepository]
   );
+   // 🔹 SINCRONIZAÇÃO AUTOMÁTICA COM O CONTEXTO
+  useEffect(() => {
+  if (!isEditing) {
+    const updatedEmail = contextState.emails.find(e => e.id === email.id);
+    if (updatedEmail) {
+      setSelectedState(updatedEmail.state || '');
+      setSelectedCity(updatedEmail.city || '');
+    }
+  }
+}, [contextState.emails, email.id, isEditing]);
+
+
 
   const handleSaveLocation = useCallback(async () => {
     if (selectedState && selectedCity) {

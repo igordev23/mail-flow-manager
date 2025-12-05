@@ -1,22 +1,19 @@
-import { useState, useCallback, useEffect } from 'react';
-import { Email } from '@/model/entities';
-import { IEmailRepository } from '@/model/repositories';
-import { IEmailService } from '@/model/services/IEmailService';
-import { EmailServiceMailtm } from '@/infrastructure/EmailServiceMailtm';
+import { useState, useCallback, useEffect, useMemo } from "react";
+import { Email } from "@/model/entities";
+import { IEmailRepository } from "@/model/repositories";
+import { IEmailService } from "@/model/services/IEmailService";
+import { EmailServiceSupabase } from "@/infrastructure/EmailServiceSupabase";
 
-// State Type
 export interface UseEmailsBaseViewModelState {
   emails: Email[];
   loading: boolean;
   error: string | null;
 }
 
-// Actions Type
 export interface UseEmailsBaseViewModelActions {
   refreshEmails: () => Promise<void>;
 }
 
-// ViewModel Return Type
 export interface UseEmailsBaseViewModelReturn {
   state: UseEmailsBaseViewModelState;
   actions: UseEmailsBaseViewModelActions;
@@ -29,105 +26,62 @@ export function useEmailsBaseViewModel(
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const emailService: IEmailService = new EmailServiceMailtm();
+  // EmailService estável
+  const emailService: IEmailService = useMemo(() => new EmailServiceSupabase(), []);
+
   const cleanBody = (text: string) => {
-  if (!text) return '';
+    if (!text) return "";
 
-  // 1) remover caracteres de escape tipo \ZX\X\X\X\
-  let cleaned = text.replace(/[\\][A-Z]+/g, '');
+    let cleaned = text.replace(/[\\][A-Z]+/g, "");
+    const lines = cleaned.split("\n");
 
-  // 2) dividir em linhas
-  const lines = cleaned.split('\n');
-  const filtered: string[] = [];
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-
-    // regex robusta para qualquer linha de quoted text
+    const filtered: string[] = [];
     const onWroteRegex = /^On\s.+?wrote:$/i;
 
-    if (
-      trimmed === '' ||            // linha vazia
-      trimmed.startsWith('>') ||   // quote
-      onWroteRegex.test(trimmed) || 
-      /^From:/i.test(trimmed) ||
-      /^Sent:/i.test(trimmed) ||
-      /^To:/i.test(trimmed) ||
-      /^Subject:/i.test(trimmed)
-    ) {
-      break; // tudo que vem depois é histórico, não queremos
+    for (const line of lines) {
+      const trimmed = line.trim();
+
+      if (
+        trimmed === "" ||
+        trimmed.startsWith(">") ||
+        onWroteRegex.test(trimmed) ||
+        /^From:/i.test(trimmed) ||
+        /^Sent:/i.test(trimmed) ||
+        /^To:/i.test(trimmed) ||
+        /^Subject:/i.test(trimmed)
+      ) {
+        break;
+      }
+
+      filtered.push(line);
     }
 
-    filtered.push(line);
-  }
+    return filtered.join("\n").trim();
+  };
 
-  return filtered.join('\n').trim();
-};
-
-
-  // Função para mapear emails recebidos do backend
-  const mapIncomingEmailToEntity = (raw: any): Email => ({
-    id: raw.id || String(Date.now()),
-    sender: raw.from?.address || raw.sender || '',
-    recipient: raw.to?.[0]?.address || raw.recipient || '',
-    subject: raw.subject || '(Sem assunto)',
-body: cleanBody(raw.text || raw.html || raw.intro || raw.body || ''),
-    date: raw.createdAt ? new Date(raw.createdAt) : new Date(),
-    state: '',
-    city: '',
-    status: 'pending',
-    isManual: false,
-    createdAt: raw.createdAt ? new Date(raw.createdAt) : new Date(),
-    updatedAt: raw.updatedAt ? new Date(raw.updatedAt) : new Date(),
-  });
-
-  // Refresh de emails
   const refreshEmails = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      // 1) Buscar inbox do backend
-      const inboxEmailsRaw = await emailService.getInbox() || [];
-      const savedEmailsRaw = await emailRepository.list() || [];
-
-      // 2) Filtrar apenas novos emails
-      const novosEmails = inboxEmailsRaw.filter(
-        (email) => !savedEmailsRaw.some((e) => e.id === email.id)
-      );
-
-      // 3) Salvar novos emails no repositório
-      for (const email of novosEmails) {
-        if (emailRepository.createFull) {
-          await emailRepository.createFull(email);
-        } else {
-          await emailRepository.create(email);
-        }
-      }
-
-      // 4) Atualizar estado com todos os emails únicos
-      const allEmailsRaw = await emailRepository.list() || [];
-      const uniqueEmailsMap = new Map<string, Email>();
-      allEmailsRaw.forEach((e) => uniqueEmailsMap.set(e.id, e));
-      setEmails(Array.from(uniqueEmailsMap.values()));
-
+      const inboxEmails = await emailService.getInbox();
+      setEmails(inboxEmails);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar e-mails');
       console.error(err);
+      setError(err instanceof Error ? err.message : "Erro ao carregar e-mails");
     } finally {
       setLoading(false);
     }
-  }, [emailRepository, emailService]);
+  }, [emailService]);
 
-  // 🔹 Polling leve: atualizar automaticamente a cada 30 segundos
   useEffect(() => {
-    refreshEmails(); // primeira carga
+    refreshEmails();
 
     const interval = setInterval(() => {
       refreshEmails();
-    }, 30000); // 30s, você pode ajustar
+    }, 30000);
 
-    return () => clearInterval(interval); // limpar intervalo ao desmontar
+    return () => clearInterval(interval);
   }, [refreshEmails]);
 
   return {

@@ -94,27 +94,6 @@ Acesse o aplicativo:
 
 Abra o navegador e acesse o endereço exibido no terminal (geralmente http://localhost:3000 ou similar).
 
-
-
-1. Clone o repositório:
-   ```bash
-   git clone https://github.com/seu-usuario/sistema-gestao-emails.git
-   cd sistema-gestao-emails
-   ```
-
-2. Instale as dependências:
-   ```bash
-   yarn install
-   # ou
-   npm install
-
-4. Inicie o servidor de desenvolvimento:
-   ```bash
-   npm run dev
-   ```
-
-5. Acesse o aplicativo no seu dispositivo ou emulador.
-
 ---
 
 ## 📐 Arquitetura MVVM

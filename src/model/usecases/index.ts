@@ -6,3 +6,5 @@ export * from './CreateEmailUseCase';
 export * from './ExportEmailsUseCase';
 export * from './GetDashboardDataUseCase';
 export * from './FilterEmailsUseCase';
+export * from './DeleteEmailUseCase';
+export * from './BulkUpdateLocationUseCase';

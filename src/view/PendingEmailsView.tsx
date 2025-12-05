@@ -1,6 +1,7 @@
 // View Layer - Pending Emails View
 
-import { Save, Download, Search, Eye } from 'lucide-react';
+import { Save, Download, Search, Eye, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,17 @@ import { LocationSelect } from './components/emails/LocationSelect';
 import { EmailDetailModal } from './components/emails/EmailDetailModal';
 import { useEmailContext } from '@/contexts/EmailContext';
 import { usePendingEmailsViewModel } from '@/viewmodel';
+import { Email } from '@/model/entities';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export default function PendingEmailsView() {
   const { state: baseState, actions: baseActions, emailRepository } = useEmailContext();
@@ -19,6 +31,15 @@ export default function PendingEmailsView() {
     baseState.loading,
     baseState.error
   );
+
+  const [emailToDelete, setEmailToDelete] = useState<Email | null>(null);
+
+  const handleConfirmDelete = async () => {
+    if (emailToDelete) {
+      await actions.deleteEmail(emailToDelete);
+      setEmailToDelete(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -69,7 +90,7 @@ export default function PendingEmailsView() {
                   Local
                 </th>
                 <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Ação
+                  Ações
                 </th>
               </tr>
             </thead>
@@ -103,14 +124,25 @@ export default function PendingEmailsView() {
                       />
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => actions.setSelectedEmail(email)}
-                        title="Ver detalhes"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => actions.setSelectedEmail(email)}
+                          title="Ver detalhes"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setEmailToDelete(email)}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          title="Excluir"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -136,6 +168,27 @@ export default function PendingEmailsView() {
           onClose={() => actions.setSelectedEmail(null)}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!emailToDelete} onOpenChange={(open) => !open && setEmailToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este e-mail? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

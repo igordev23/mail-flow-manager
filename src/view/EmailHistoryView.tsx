@@ -1,5 +1,6 @@
 // View Layer - Email History View
 
+import { useState } from 'react';
 import { Search, Download, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,19 +11,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { EmailTable } from './components/emails/EmailTable';
 import { EmailDetailModal } from './components/emails/EmailDetailModal';
 import { useEmailContext } from '@/contexts/EmailContext';
 import { useEmailHistoryViewModel } from '@/viewmodel';
+import { Email } from '@/model/entities';
 
 export default function EmailHistoryView() {
-  const { state: baseState, locationRepository } = useEmailContext();
+  const { state: baseState, actions: baseActions, locationRepository, emailRepository } = useEmailContext();
   const { state, actions } = useEmailHistoryViewModel(
     baseState.emails,
     locationRepository,
+    emailRepository,
+    baseActions.refreshEmails,
     baseState.loading,
     baseState.error
   );
+
+  const [emailToDelete, setEmailToDelete] = useState<Email | null>(null);
+
+  const handleConfirmDelete = async () => {
+    if (emailToDelete) {
+      await actions.deleteEmail(emailToDelete);
+      setEmailToDelete(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -106,7 +129,9 @@ export default function EmailHistoryView() {
         <EmailTable
           emails={state.filteredEmails}
           onViewEmail={actions.setSelectedEmail}
+          onDeleteEmail={setEmailToDelete}
           showStatus
+          showDelete
         />
       </div>
 
@@ -116,6 +141,27 @@ export default function EmailHistoryView() {
           onClose={() => actions.setSelectedEmail(null)}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!emailToDelete} onOpenChange={(open) => !open && setEmailToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este e-mail? Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

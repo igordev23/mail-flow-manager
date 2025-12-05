@@ -1,6 +1,6 @@
 // View Layer - Email Table Component
 
-import { Eye } from 'lucide-react';
+import { Eye, Trash2 } from 'lucide-react';
 import { Email } from '@/model/entities';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -10,10 +10,18 @@ import { cn } from '@/lib/utils';
 interface EmailTableProps {
   emails: Email[];
   onViewEmail: (email: Email) => void;
+  onDeleteEmail?: (email: Email) => void;
   showStatus?: boolean;
+  showDelete?: boolean;
 }
 
-export function EmailTable({ emails, onViewEmail, showStatus = false }: EmailTableProps) {
+export function EmailTable({ 
+  emails, 
+  onViewEmail, 
+  onDeleteEmail,
+  showStatus = false,
+  showDelete = false 
+}: EmailTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -37,7 +45,7 @@ export function EmailTable({ emails, onViewEmail, showStatus = false }: EmailTab
               </th>
             )}
             <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Ação
+              Ações
             </th>
           </tr>
         </thead>
@@ -86,13 +94,25 @@ export function EmailTable({ emails, onViewEmail, showStatus = false }: EmailTab
                 </td>
               )}
               <td className="px-4 py-3 text-right">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onViewEmail(email)}
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center justify-end gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onViewEmail(email)}
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  {showDelete && onDeleteEmail && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => onDeleteEmail(email)}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </td>
             </tr>
           ))}

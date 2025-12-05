@@ -134,7 +134,7 @@ Os protótipos low-fi foram utilizados para validação de fluxo. O design final
 
 ## 📂 Repositório do Backend
 
-O repositório do backend está localizado no seguinte endereço: [Backend do Sistema de Gestão de E-mails](https://github.com/seu-usuario/backend-sistema-gestao-emails).
+O repositório do backend está localizado no seguinte endereço: [Backend do Sistema de Gestão de E-mails](https://github.com/igordev23/server_mailmanager).
 
 ## 📄 Licença
 

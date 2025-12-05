@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { Email } from '@/model/entities';
 import { IEmailRepository } from '@/model/repositories';
 import { IEmailService } from '@/model/services/IEmailService';
-import { EmailServiceMailtm } from '@/model/services/EmailServiceMailtm';
+import { EmailServiceMailtm } from '@/infrastructure/EmailServiceMailtm';
 
 // State Type
 export interface UseEmailsBaseViewModelState {

@@ -1,3 +1,4 @@
+// Infrastructure Layer - IBGE Location Service Implementation
 import axios from 'axios';
 import { BrazilianState, BrazilianCity } from '@/model/entities/Location';
 import { ILocationRepository } from '@/model/repositories/ILocationRepository';

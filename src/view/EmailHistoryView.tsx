@@ -25,17 +25,18 @@ import { EmailTable } from './components/emails/EmailTable';
 import { EmailDetailModal } from './components/emails/EmailDetailModal';
 import { useEmailContext } from '@/contexts/EmailContext';
 import { useEmailHistoryViewModel } from '@/viewmodel';
+import { IBGELocationService } from '@/infrastructure';
 import { Email } from '@/model/entities';
 
 export default function EmailHistoryView() {
-  const { state: baseState, actions: baseActions, locationRepository, emailRepository } = useEmailContext();
+  const { state: baseState, actions: baseActions } = useEmailContext();
+  const locationRepository = new IBGELocationService();
+
+  // 🔹 Usando o ViewModel atualizado com emails do contexto
   const { state, actions } = useEmailHistoryViewModel(
-    baseState.emails,
     locationRepository,
-    emailRepository,
-    baseActions.refreshEmails,
-    baseState.loading,
-    baseState.error
+    baseState.emails,       // emails do contexto
+    baseActions.refreshEmails // função de refresh do contexto
   );
 
   const [emailToDelete, setEmailToDelete] = useState<Email | null>(null);
@@ -49,6 +50,7 @@ export default function EmailHistoryView() {
 
   return (
     <div className="space-y-6">
+      {/* Header e Ações */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Histórico de E-mails</h1>
@@ -68,6 +70,7 @@ export default function EmailHistoryView() {
         </div>
       </div>
 
+      {/* Pesquisa */}
       <div className="relative max-w-md">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
@@ -78,6 +81,7 @@ export default function EmailHistoryView() {
         />
       </div>
 
+      {/* Filtros */}
       {state.showFilters && (
         <div className="stat-card animate-slide-up">
           <div className="flex flex-wrap gap-4">
@@ -85,7 +89,10 @@ export default function EmailHistoryView() {
               <label className="text-xs font-medium text-muted-foreground mb-1 block">
                 Status
               </label>
-              <Select value={state.filter.status || 'all'} onValueChange={(v) => actions.setStatus(v as 'all' | 'pending' | 'classified')}>
+              <Select
+                value={state.filter.status || 'all'}
+                onValueChange={(v) => actions.setStatus(v as 'all' | 'pending' | 'classified')}
+              >
                 <SelectTrigger className="w-full sm:w-[150px]">
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
@@ -101,7 +108,10 @@ export default function EmailHistoryView() {
               <label className="text-xs font-medium text-muted-foreground mb-1 block">
                 Estado
               </label>
-              <Select value={state.filter.state || 'all'} onValueChange={(v) => actions.setState(v === 'all' ? undefined : v)}>
+              <Select
+                value={state.filter.state || 'all'}
+                onValueChange={(v) => actions.setState(v === 'all' ? undefined : v)}
+              >
                 <SelectTrigger className="w-full sm:w-[180px]">
                   <SelectValue placeholder="Todos" />
                 </SelectTrigger>
@@ -125,6 +135,7 @@ export default function EmailHistoryView() {
         </div>
       )}
 
+      {/* Tabela de Emails */}
       <div className="stat-card overflow-hidden p-0">
         <EmailTable
           emails={state.filteredEmails}
@@ -135,6 +146,7 @@ export default function EmailHistoryView() {
         />
       </div>
 
+      {/* Detalhes do Email */}
       {state.selectedEmail && (
         <EmailDetailModal
           email={state.selectedEmail}
@@ -143,7 +155,10 @@ export default function EmailHistoryView() {
       )}
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!emailToDelete} onOpenChange={(open) => !open && setEmailToDelete(null)}>
+      <AlertDialog
+        open={!!emailToDelete}
+        onOpenChange={(open) => !open && setEmailToDelete(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
@@ -153,7 +168,7 @@ export default function EmailHistoryView() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleConfirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

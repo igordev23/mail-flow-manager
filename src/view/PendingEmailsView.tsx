@@ -24,13 +24,7 @@ import {
 
 export default function PendingEmailsView() {
   const { state: baseState, actions: baseActions, emailRepository } = useEmailContext();
-  const { state, actions } = usePendingEmailsViewModel(
-    baseState.emails,
-    emailRepository,
-    baseActions.refreshEmails,
-    baseState.loading,
-    baseState.error
-  );
+  const { state, actions } = usePendingEmailsViewModel();
 
   const [emailToDelete, setEmailToDelete] = useState<Email | null>(null);
 

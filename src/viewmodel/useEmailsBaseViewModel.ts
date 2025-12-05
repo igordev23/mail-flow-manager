@@ -60,29 +60,40 @@ export function useEmailsBaseViewModel(
   };
 
   const refreshEmails = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  console.log("[refreshEmails] Iniciando atualização de e-mails...");
+  try {
+    setLoading(true);
+    setError(null);
 
-      const inboxEmails = await emailService.getInbox();
-      setEmails(inboxEmails);
-    } catch (err) {
-      console.error(err);
-      setError(err instanceof Error ? err.message : "Erro ao carregar e-mails");
-    } finally {
-      setLoading(false);
-    }
-  }, [emailService]);
+    const inboxEmails = await emailService.getInbox();
+    console.log("[refreshEmails] E-mails recebidos do backend:", inboxEmails);
+
+    setEmails(inboxEmails);
+    console.log("[refreshEmails] Estado atualizado com os novos e-mails:", inboxEmails);
+  } catch (err) {
+    console.error("[refreshEmails] Erro ao atualizar e-mails:", err);
+    setError(err instanceof Error ? err.message : "Erro ao carregar e-mails");
+  } finally {
+    setLoading(false);
+  }
+}, [emailService]);
+
 
   useEffect(() => {
+  console.log("[useEffect] Configurando intervalo para atualização automática...");
+  refreshEmails(); // primeira carga
+
+  const interval = setInterval(() => {
+    console.log("[useEffect] Executando refreshEmails via intervalo...");
     refreshEmails();
+  }, 10000); // 30s
 
-    const interval = setInterval(() => {
-      refreshEmails();
-    }, 30000);
+  return () => {
+    console.log("[useEffect] Limpando intervalo...");
+    clearInterval(interval);
+  };
+}, [refreshEmails]);
 
-    return () => clearInterval(interval);
-  }, [refreshEmails]);
 
   return {
     state: { emails, loading, error },

@@ -4,7 +4,6 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Email, EmailFilter, BrazilianState } from '@/model/entities';
 import { ILocationRepository } from '@/model/repositories';
 import { FilterEmailsUseCase, ExportEmailsUseCase, DeleteEmailUseCase } from '@/model/usecases';
-import { EmailRepositorySupabase } from '@/model/repositories/EmailRepositorySupabase';
 import { toast } from '@/hooks/use-toast';
 
 // State Type
@@ -38,48 +37,42 @@ export interface UseEmailHistoryViewModelReturn {
   actions: UseEmailHistoryViewModelActions;
 }
 
+/**
+ * Atualizado para receber emails e refresh do contexto
+ */
 export function useEmailHistoryViewModel(
-  locationRepository: ILocationRepository
+  locationRepository: ILocationRepository,
+  contextEmails: Email[],                     // emails do contexto
+  contextRefreshEmails: () => Promise<void>  // refresh do contexto
 ): UseEmailHistoryViewModelReturn {
-  const emailRepository = useMemo(() => new EmailRepositorySupabase(), []);
   const filterEmailsUseCase = useMemo(() => new FilterEmailsUseCase(), []);
   const exportEmailsUseCase = useMemo(() => new ExportEmailsUseCase(), []);
-  const deleteEmailUseCase = useMemo(() => new DeleteEmailUseCase(emailRepository), [emailRepository]);
 
-  const [emails, setEmails] = useState<Email[]>([]);
+  const [emails, setEmails] = useState<Email[]>(contextEmails);
   const [filter, setFilter] = useState<EmailFilter>({ status: 'all' });
   const [states, setStates] = useState<BrazilianState[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Carregar emails
-  const refreshEmails = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const inbox = await emailRepository.list();
-      setEmails(inbox);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar e-mails');
-    } finally {
-      setLoading(false);
-    }
-  }, [emailRepository]);
+  // 🔹 Sincroniza emails internos com os do contexto
+  useEffect(() => {
+    setEmails(contextEmails);
+  }, [contextEmails]);
 
   // Carregar estados
   useEffect(() => {
     const loadStates = async () => {
-      const data = await locationRepository.getStates();
-      setStates(data);
+      try {
+        const data = await locationRepository.getStates();
+        setStates(data);
+      } catch (err) {
+        console.error('Erro ao carregar estados:', err);
+      }
     };
     loadStates();
   }, [locationRepository]);
-
-  useEffect(() => {
-    refreshEmails(); // primeira carga
-  }, [refreshEmails]);
 
   const filteredEmails = useMemo(
     () => filterEmailsUseCase.execute(emails, filter),
@@ -102,12 +95,13 @@ export function useEmailHistoryViewModel(
 
   const deleteEmail = useCallback(async (email: Email) => {
     try {
-      await deleteEmailUseCase.execute(email.id);
+      // 🔹 Usa o refresh do contexto após exclusão
+      await contextRefreshEmails();
       toast({
         title: 'E-mail excluído',
         description: 'O e-mail foi removido com sucesso.',
       });
-      await refreshEmails(); // 🔹 atualiza a lista após exclusão
+      setSelectedEmail(null);
     } catch (err) {
       toast({
         title: 'Erro',
@@ -115,7 +109,19 @@ export function useEmailHistoryViewModel(
         variant: 'destructive',
       });
     }
-  }, [deleteEmailUseCase, refreshEmails]);
+  }, [contextRefreshEmails]);
+
+  const refreshEmails = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await contextRefreshEmails(); // 🔹 atualiza via contexto
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao atualizar e-mails');
+    } finally {
+      setLoading(false);
+    }
+  }, [contextRefreshEmails]);
 
   return {
     state: {

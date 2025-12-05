@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { Email } from '@/model/entities';
 import { IEmailRepository } from '@/model/repositories';
-import { SavePendingEmailsUseCase, ExportEmailsUseCase } from '@/model/usecases';
+import { SavePendingEmailsUseCase, ExportEmailsUseCase, DeleteEmailUseCase } from '@/model/usecases';
 import { toast } from '@/hooks/use-toast';
 
 // State Type
@@ -32,6 +32,7 @@ export interface UsePendingEmailsViewModelActions {
   handleCityChange: (emailId: string, city: string) => void;
   saveAll: () => Promise<void>;
   exportEmails: () => void;
+  deleteEmail: (email: Email) => Promise<void>;
 }
 
 // ViewModel Return Type
@@ -56,6 +57,7 @@ export function usePendingEmailsViewModel(
     [emailRepository]
   );
   const exportEmailsUseCase = useMemo(() => new ExportEmailsUseCase(), []);
+  const deleteEmailUseCase = useMemo(() => new DeleteEmailUseCase(emailRepository), [emailRepository]);
 
   const pendingEmails = useMemo(
     () => emails.filter(e => e.status === 'pending'),
@@ -121,6 +123,23 @@ export function usePendingEmailsViewModel(
     });
   }, [filteredEmails, exportEmailsUseCase]);
 
+  const deleteEmail = useCallback(async (email: Email) => {
+    try {
+      await deleteEmailUseCase.execute(email.id);
+      toast({
+        title: 'E-mail excluído',
+        description: 'O e-mail foi removido com sucesso.',
+      });
+      onEmailsUpdated();
+    } catch (err) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível excluir o e-mail.',
+        variant: 'destructive',
+      });
+    }
+  }, [deleteEmailUseCase, onEmailsUpdated]);
+
   return {
     state: {
       pendingEmails,
@@ -139,6 +158,7 @@ export function usePendingEmailsViewModel(
       handleCityChange,
       saveAll,
       exportEmails,
+      deleteEmail,
     },
   };
 }

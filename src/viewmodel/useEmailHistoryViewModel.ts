@@ -2,8 +2,8 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Email, EmailFilter, BrazilianState } from '@/model/entities';
-import { ILocationRepository } from '@/model/repositories';
-import { FilterEmailsUseCase, ExportEmailsUseCase } from '@/model/usecases';
+import { ILocationRepository, IEmailRepository } from '@/model/repositories';
+import { FilterEmailsUseCase, ExportEmailsUseCase, DeleteEmailUseCase } from '@/model/usecases';
 import { toast } from '@/hooks/use-toast';
 
 // State Type
@@ -26,6 +26,7 @@ export interface UseEmailHistoryViewModelActions {
   setSelectedEmail: (email: Email | null) => void;
   toggleFilters: () => void;
   exportEmails: () => void;
+  deleteEmail: (email: Email) => Promise<void>;
 }
 
 // ViewModel Return Type
@@ -37,6 +38,8 @@ export interface UseEmailHistoryViewModelReturn {
 export function useEmailHistoryViewModel(
   emails: Email[],
   locationRepository: ILocationRepository,
+  emailRepository: IEmailRepository,
+  onEmailsUpdated: () => void,
   loading: boolean,
   error: string | null
 ): UseEmailHistoryViewModelReturn {
@@ -47,6 +50,7 @@ export function useEmailHistoryViewModel(
 
   const filterEmailsUseCase = useMemo(() => new FilterEmailsUseCase(), []);
   const exportEmailsUseCase = useMemo(() => new ExportEmailsUseCase(), []);
+  const deleteEmailUseCase = useMemo(() => new DeleteEmailUseCase(emailRepository), [emailRepository]);
 
   // Load states
   useEffect(() => {
@@ -90,6 +94,23 @@ export function useEmailHistoryViewModel(
     });
   }, [filteredEmails, exportEmailsUseCase]);
 
+  const deleteEmail = useCallback(async (email: Email) => {
+    try {
+      await deleteEmailUseCase.execute(email.id);
+      toast({
+        title: 'E-mail excluído',
+        description: 'O e-mail foi removido com sucesso.',
+      });
+      onEmailsUpdated();
+    } catch (err) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível excluir o e-mail.',
+        variant: 'destructive',
+      });
+    }
+  }, [deleteEmailUseCase, onEmailsUpdated]);
+
   return {
     state: {
       filteredEmails,
@@ -108,6 +129,7 @@ export function useEmailHistoryViewModel(
       setSelectedEmail,
       toggleFilters,
       exportEmails,
+      deleteEmail,
     },
   };
 }

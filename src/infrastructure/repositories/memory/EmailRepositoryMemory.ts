@@ -144,6 +144,12 @@ export class EmailRepositoryMemory implements IEmailRepository {
     return newEmail;
   }
 
+async createFull(data: Email): Promise<Email> {
+    this.emails.unshift(data);
+    return data;
+  }
+
+  
   async update(id: string, data: Partial<Email>): Promise<Email> {
     const index = this.emails.findIndex(e => e.id === id);
     if (index === -1) throw new Error('Email not found');

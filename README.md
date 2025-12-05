@@ -1,73 +1,162 @@
-# Welcome to your Lovable project
+# Sistema de Gestão de E-mails
 
-## Project info
+## 📋 Descrição do Projeto
 
-**URL**: https://lovable.dev/projects/10cfa776-ec73-460a-86a1-7e9939e36381
+Este projeto foi desenvolvido como parte do **Hackaton Sistema de Gestão de E-mails** realizado pelo **IFPI – Curso de Tecnologias em Análise e Desenvolvimento de Sistemas** em **Piripiri – PI, 2025**. O objetivo principal é criar um sistema capaz de gerenciar e organizar e-mails enviados pelos colaboradores de uma empresa, aplicando boas práticas de desenvolvimento, arquitetura de software, banco de dados e design de interface.
 
-## How can I edit this code?
+O sistema captura automaticamente e-mails enviados pelos colaboradores (com cópia para um endereço específico), registra-os em uma base de dados e permite que informações adicionais, como Estado e Município, sejam associadas a cada e-mail. Além disso, o sistema oferece ferramentas de análise e visualização (dashboard) e suporte para cadastro manual de e-mails.
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## 🛠️ Funcionalidades
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/10cfa776-ec73-460a-86a1-7e9939e36381) and start prompting.
+1. **Captura Automática de E-mails**:
+   - Captura e-mails enviados com cópia para um endereço específico (ex.: `meusistema@gmail.com`).
+   - Registra automaticamente os e-mails na base de dados.
 
-Changes made via Lovable will be committed automatically to this repo.
+2. **Cadastro Manual de E-mails**:
+   - Permite que colaboradores adicionem e-mails manualmente ao sistema.
 
-**Use your preferred IDE**
+3. **Gestão de Informações Adicionais**:
+   - Possibilidade de associar Estado e Município aos e-mails registrados.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+4. **Dashboard de Análise**:
+   - Ferramentas de visualização e análise para monitorar os e-mails enviados.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+5. **Fluxo de Validação de Dados**:
+   - Interface intuitiva para validar e completar informações dos e-mails capturados.
 
-Follow these steps:
+---
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 🧑‍💻 Tecnologias Utilizadas
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- **Frontend**: React Native com Expo Router e TailwindCSS.
+- **Arquitetura**: MVVM (Model-View-ViewModel).
+- **Backend**: Node.js com serviços de e-mail integrados (ex.: Mailgun, Supabase).
+- **Banco de Dados**: PostgreSQL.
+- **Testes**: Jest para testes unitários e de integração.
+- **UI/UX**: Design responsivo e acessível com base em boas práticas de usabilidade.
 
-# Step 3: Install the necessary dependencies.
-npm i
+---
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+## 📂 Estrutura do Projeto
+
+```bash
+src/
+├─ app/                # Rotas e navegação
+├─ model/              # Entidades, repositórios e serviços
+├─ viewmodel/          # Hooks customizados para gerenciar estado e lógica
+├─ view/               # Componentes e telas da interface
+├─ useCase/            # Casos de uso específicos
+├─ infrastructure/     # Serviços de integração com APIs externas
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🚀 Como Executar o Projeto
 
-**Use GitHub Codespaces**
+### Pré-requisitos
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+- **Node.js** (v18 ou superior)
+- Yarn ou npm
+- Expo CLI
 
-## What technologies are used for this project?
+### Passos para execução
 
-This project is built with:
+1. **Clone o repositório**:
+   ```bash
+   git clone https://github.com/seu-usuario/sistema-gestao-emails.git
+   cd sistema-gestao-emails
+Instale as dependências:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+Com Yarn:
 
-## How can I deploy this project?
+```bash
+yarn install
+```
+Ou com npm:
+```bash
+npm install
+```
+Inicie o servidor de desenvolvimento:
 
-Simply open [Lovable](https://lovable.dev/projects/10cfa776-ec73-460a-86a1-7e9939e36381) and click on Share -> Publish.
+Com Yarn:
 
-## Can I connect a custom domain to my Lovable project?
+```bash
+yarn dev
+```
+Ou com npm:
 
-Yes, you can!
+```bash
+npm run dev
+```
+Acesse o aplicativo:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+Abra o navegador e acesse o endereço exibido no terminal (geralmente http://localhost:3000 ou similar).
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+
+
+1. Clone o repositório:
+   ```bash
+   git clone https://github.com/seu-usuario/sistema-gestao-emails.git
+   cd sistema-gestao-emails
+   ```
+
+2. Instale as dependências:
+   ```bash
+   yarn install
+   # ou
+   npm install
+
+4. Inicie o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+
+5. Acesse o aplicativo no seu dispositivo ou emulador.
+
+---
+
+## 📐 Arquitetura MVVM
+
+O projeto segue o padrão **MVVM (Model-View-ViewModel)**, garantindo separação de responsabilidades e maior escalabilidade. A comunicação entre as camadas segue o fluxo:
+
+1. **Usuário** interage com a **View**.
+2. A **View** chama as **Actions** da **ViewModel**.
+3. A **ViewModel** processa a lógica e atualiza o **Model**.
+4. O **Model** retorna os dados processados para a **ViewModel**, que atualiza o estado da **View**.
+
+---
+
+## 🧪 Testes
+
+Os testes são obrigatórios para garantir a qualidade do sistema. As áreas testadas incluem:
+
+1. **ViewModels**:
+   - Regras de negócio.
+   - Estados gerados.
+   - Chamadas de ações.
+
+2. **Serviços e Repositórios**:
+   - Simulação de APIs externas.
+   - Testes de CRUD.
+
+3. **Fluxos de Cadastro e Atualização**:
+   - Validação de dados.
+   - Comportamento em cenários de erro.
+
+---
+
+## 📊 Protótipos de Tela
+
+Os protótipos low-fi foram utilizados para validação de fluxo. O design final prioriza uma boa experiência de usuário (UI/UX).
+
+---
+
+## 📂 Repositório do Backend
+
+O repositório do backend está localizado no seguinte endereço: [Backend do Sistema de Gestão de E-mails](https://github.com/seu-usuario/backend-sistema-gestao-emails).
+
+## 📄 Licença
+
+Este projeto é licenciado sob a [MIT License](LICENSE).

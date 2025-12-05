@@ -2,7 +2,7 @@ import { Email } from "@/model/entities/Email";
 import { IEmailService } from "@/model/services/IEmailService";
 
 export class EmailServiceSupabase implements IEmailService {
-  baseUrl = "http://localhost:3000/emails";
+  baseUrl = "https://server-mailmanager.onrender.com/emails";
 
   // -----------------------------
   // LISTAR TODOS

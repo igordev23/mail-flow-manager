@@ -1,10 +1,9 @@
 # Sistema de Gestão de E-mails
 ## 📋 Identificação dos Integrantes do Grupo
-- **Francisco Igor Silva Santos** - 2024116TADS0030 
+
 - **Sávyo Francisco Barbosa Nascimento** - 20204116TADS0003  
 - **Mardone Silva Pereira** - 2024116TADS0034
 - **Ikaro Herbert Vasconcelos Gomes** - 2024116TADS0032
-- **Carlos André Sampaio do Nascimento** - 2024116TADS0026
 
 ---
   

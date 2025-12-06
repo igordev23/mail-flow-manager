@@ -1,5 +1,13 @@
 # Sistema de Gestão de E-mails
+## 📋 Identificação dos Integrantes do Grupo
+- **Francisco Igor Silva Santos** - 2024116TADS0030 
+- **Sávyo Francisco Barbosa Nascimento** - 20204116TADS0003  
+- **Mardone Silva Pereira** - 2024116TADS0034
+- **Ikaro Herbert Vasconcelos Gomes** - 2024116TADS0032
+- **Carlos André Sampaio do Nascimento** - 2024116TADS0026
 
+---
+  
 ## 📋 Descrição do Projeto
 
 Este projeto foi desenvolvido como parte do **Hackaton Sistema de Gestão de E-mails** realizado pelo **IFPI – Curso de Tecnologias em Análise e Desenvolvimento de Sistemas** em **Piripiri – PI, 2025**. O objetivo principal é criar um sistema capaz de gerenciar e organizar e-mails enviados pelos colaboradores de uma empresa, aplicando boas práticas de desenvolvimento, arquitetura de software, banco de dados e design de interface.

@@ -1,9 +1,9 @@
 # Sistema de Gestão de E-mails
 ## 📋 Identificação dos Integrantes do Grupo
 
-- **Sávyo Francisco Barbosa Nascimento** - 20204116TADS0003  
-- **Mardone Silva Pereira** - 2024116TADS0034
-- **Ikaro Herbert Vasconcelos Gomes** - 2024116TADS0032
+- **Sávyo Francisco Barbosa Nascimento**
+- **Mardone Silva Pereira** 
+- **Ikaro Herbert Vasconcelos Gomes** 
 
 ---
   
